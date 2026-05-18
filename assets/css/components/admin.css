@@ -1,0 +1,246 @@
+/* Admin Panel Styles */
+.admin-container {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    margin-bottom: var(--spacing-2xl);
+    box-shadow: var(--shadow-md);
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-2xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--color-border);
+}
+
+.admin-header__title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.admin-header__title svg {
+    width: 20px;
+    height: 20px;
+    color: var(--color-text-secondary);
+}
+
+.btn-add-room {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-black);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-add-room:hover {
+    background: var(--color-black);
+    opacity: 0.85;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-add-room:active {
+    transform: translateY(0);
+}
+
+.btn-add-room svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Room List */
+.room-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.room-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+    position: relative;
+}
+
+.room-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--color-text-secondary);
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    opacity: 0.3;
+    transition: all var(--transition-base);
+}
+
+.room-item:hover {
+    background: var(--color-card-bg);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-text-secondary);
+}
+
+.room-item:hover::before {
+    opacity: 1;
+}
+
+.room-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.room-item__name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.room-item__price {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.room-item__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-left: var(--spacing-lg);
+}
+
+.btn-icon-only {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    transition: all var(--transition-base);
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.btn-icon-only:active {
+    transform: scale(0.95);
+}
+
+.btn-edit {
+    color: var(--color-text-secondary);
+}
+
+.btn-edit:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--color-text-primary);
+}
+
+.btn-edit svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+}
+
+.btn-delete {
+    background: #e53935;
+    color: var(--color-white);
+}
+
+.btn-delete:hover {
+    background: #c62828;
+    box-shadow: 0 4px 8px rgba(229, 57, 53, 0.3);
+}
+
+.btn-delete:active {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-delete svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+}
+
+/* Loading State */
+.room-list.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Empty State */
+.room-list:empty::after {
+    content: 'No rooms yet. Click "Add Room" to create one.';
+    display: block;
+    padding: var(--spacing-2xl);
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .btn-add-room {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: var(--font-size-sm);
+    }
+    
+    .btn-add-room svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-container {
+        padding: var(--spacing-xl);
+    }
+    
+    .admin-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+    }
+    
+    .btn-add-room {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .room-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .room-item__actions {
+        width: 100%;
+        margin-left: 0;
+        margin-top: var(--spacing-md);
+    }
+    
+    .room-item__actions .btn-icon-only {
+        flex: 1;
+    }
+}

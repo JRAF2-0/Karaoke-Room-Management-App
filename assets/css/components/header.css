@@ -1,0 +1,50 @@
+/* Header Component Styles */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xl) 0;
+    margin-bottom: var(--spacing-xl);
+}
+
+.header__left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.header__icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header__icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.header__content {
+    display: flex;
+    flex-direction: column;
+}
+
+.header__title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.header__subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-normal);
+}
+
+.header__right {
+    display: flex;
+    align-items: center;
+}

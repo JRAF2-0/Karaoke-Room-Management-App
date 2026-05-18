@@ -1,0 +1,43 @@
+/* Navigation Component Styles */
+.navigation {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.nav-tab {
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-white);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    min-width: 160px;
+    justify-content: center;
+}
+
+.nav-tab:hover {
+    background: var(--color-card-bg);
+}
+
+.nav-tab.active {
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+
+.nav-tab__icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-tab__icon svg {
+    width: 16px;
+    height: 16px;
+}

@@ -1,0 +1,214 @@
+/* Room Card Component Styles */
+.room-card {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    transition: all var(--transition-base);
+    border: 1px solid transparent;
+}
+
+.room-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border);
+}
+
+/* Occupied Room State */
+.room-card.occupied {
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+    border: 1px solid #c8e6c9;
+}
+
+.room-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.room-card__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.room-card__status {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    background: var(--color-card-bg);
+}
+
+.room-card__status--vacant {
+    color: var(--color-vacant);
+    background: var(--color-card-bg);
+}
+
+.room-card__status--occupied {
+    color: var(--color-white);
+    background: var(--color-black);
+}
+
+.room-card__body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xl) 0;
+}
+
+/* Vacant State Body */
+.room-card__body--vacant {
+    display: flex;
+}
+
+/* Occupied State Body */
+.room-card__body--occupied {
+    display: none;
+}
+
+.room-card.occupied .room-card__body--vacant {
+    display: none;
+}
+
+.room-card.occupied .room-card__body--occupied {
+    display: flex;
+    align-items: flex-start;
+    padding: var(--spacing-md) 0;
+}
+
+.room-card__icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-card-bg);
+    border-radius: 50%;
+}
+
+.room-card__icon svg {
+    width: 32px;
+    height: 32px;
+    color: var(--color-text-light);
+}
+
+.room-card__availability {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+.room-card__price {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    font-weight: var(--font-weight-normal);
+}
+
+/* Occupied Room Info */
+.room-card__occupied-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.customer-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+}
+
+.customer-info svg {
+    width: 20px;
+    height: 20px;
+    color: var(--color-text-secondary);
+}
+
+.customer-name {
+    font-weight: var(--font-weight-medium);
+}
+
+.timer-display {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.timer-display svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-text-secondary);
+}
+
+.timer-display.warning {
+    color: #ff9800;
+}
+
+.timer-display.danger {
+    color: #f44336;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes timerPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bookingGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+}
+
+.room-card.booking-confirmed {
+    animation: bookingGlow 1s ease-out;
+}
+
+.room-card__footer {
+    margin-top: auto;
+}
+
+.btn-stop {
+    background: #e53935;
+    color: var(--color-white);
+}
+
+.btn-stop:hover {
+    background: #c62828;
+}
+
+.btn-stop .btn-icon svg {
+    width: 16px;
+    height: 16px;
+}
