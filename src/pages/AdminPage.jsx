@@ -86,7 +86,7 @@ function RoomModal({
   );
 }
 
-export default function AdminPage({ rooms, onAddRoom, onUpdateRoom, onDeleteRoom, onRefresh, notify }) {
+export default function AdminPage({ rooms, onAddRoom, onUpdateRoom, onDeleteRoom, onRefresh, notify, confirm }) {
   const sortedRooms = useMemo(() => [...rooms].sort((a, b) => a.id - b.id), [rooms]);
 
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -151,18 +151,22 @@ export default function AdminPage({ rooms, onAddRoom, onUpdateRoom, onDeleteRoom
     }
   };
 
-  const handleDelete = async (room) => {
-    if (!window.confirm(`Are you sure you want to delete ${room.name}?\n\nThis action cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      await onDeleteRoom(room.id);
-      await onRefresh();
-      notify(`${room.name} deleted successfully!`, 'success');
-    } catch (error) {
-      notify(error.message || 'Failed to delete room.', 'error');
-    }
+  const handleDelete = (room) => {
+    confirm({
+      title: `Delete ${room.name}?`,
+      message: 'This action cannot be undone.',
+      confirmLabel: 'Delete',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await onDeleteRoom(room.id);
+          await onRefresh();
+          notify(`${room.name} deleted successfully!`, 'success');
+        } catch (error) {
+          notify(error.message || 'Failed to delete room.', 'error');
+        }
+      },
+    });
   };
 
   return (

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
-import Notifications from './components/Notifications';
+import AlertModal from './components/AlertModal';
+import ConfirmDialog from './components/ConfirmDialog';
 import AdminPage from './pages/AdminPage';
 import DashboardPage from './pages/DashboardPage';
 import HistoryPage from './pages/HistoryPage';
@@ -29,6 +30,8 @@ function AppContent({
   onDeleteRoom,
   onRefresh,
   notify,
+  showAlert,
+  confirm,
 }) {
   return (
     <Routes>
@@ -42,7 +45,8 @@ function AppContent({
             onReleaseRoom={onReleaseRoom}
             onExtendRoom={onExtendRoom}
             onRefresh={onRefresh}
-            notify={notify}
+            showAlert={showAlert}
+            confirm={confirm}
           />
         }
       />
@@ -59,6 +63,7 @@ function AppContent({
             onDeleteRoom={onDeleteRoom}
             onRefresh={onRefresh}
             notify={notify}
+            confirm={confirm}
           />
         }
       />
@@ -73,7 +78,8 @@ function AppContent({
             onReleaseRoom={onReleaseRoom}
             onExtendRoom={onExtendRoom}
             onRefresh={onRefresh}
-            notify={notify}
+            showAlert={showAlert}
+            confirm={confirm}
           />
         }
       />
@@ -86,17 +92,56 @@ export default function App() {
   const [activeSessions, setActiveSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const [notifications, setNotifications] = useState([]);
+  const [alertState, setAlertState] = useState(null);
+  const [confirmState, setConfirmState] = useState(null);
 
-  const notify = useCallback((message, type = 'success') => {
-    const id = `${Date.now()}-${Math.random()}`;
-
-    setNotifications((current) => [...current, { id, message, type }]);
-
-    window.setTimeout(() => {
-      setNotifications((current) => current.filter((item) => item.id !== id));
-    }, 4000);
+  const showAlert = useCallback((options) => {
+    const { type = 'success', title, message, details } = options || {};
+    setAlertState({ type, title, message, details });
   }, []);
+
+  const closeAlert = useCallback(() => {
+    setAlertState(null);
+  }, []);
+
+  const notify = useCallback(
+    (message, type = 'success') => {
+      showAlert({ type, message });
+    },
+    [showAlert],
+  );
+
+  const confirm = useCallback((options) => {
+    const {
+      title,
+      message,
+      confirmLabel,
+      cancelLabel,
+      destructive = false,
+      onConfirm,
+    } = options || {};
+
+    setConfirmState({
+      title,
+      message,
+      confirmLabel,
+      cancelLabel,
+      destructive,
+      onConfirm,
+    });
+  }, []);
+
+  const closeConfirm = useCallback(() => {
+    setConfirmState(null);
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    const callback = confirmState?.onConfirm;
+    setConfirmState(null);
+    if (typeof callback === 'function') {
+      callback();
+    }
+  }, [confirmState]);
 
   const refreshData = useCallback(
     async (showLoader = false) => {
@@ -164,19 +209,30 @@ export default function App() {
     return '';
   }, [loadError]);
 
-  const handleResetAll = useCallback(async () => {
-    if (!window.confirm('Are you sure you want to reset all room data? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      await resetAllRooms();
-      await refreshData(false);
-      notify('All rooms have been reset successfully!', 'success');
-    } catch (error) {
-      notify(error.message || 'Failed to reset rooms.', 'error');
-    }
-  }, [notify, refreshData]);
+  const handleResetAll = useCallback(() => {
+    confirm({
+      title: 'Reset all rooms?',
+      message: 'This will clear all bookings and active sessions. This action cannot be undone.',
+      confirmLabel: 'Reset all',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await resetAllRooms();
+          await refreshData(false);
+          showAlert({
+            type: 'success',
+            title: 'Rooms reset',
+            message: 'All rooms have been reset successfully.',
+          });
+        } catch (error) {
+          showAlert({
+            type: 'error',
+            message: error.message || 'Failed to reset rooms.',
+          });
+        }
+      },
+    });
+  }, [confirm, refreshData, showAlert]);
 
   if (isLoading && isSupabaseConfigured) {
     return (
@@ -223,12 +279,32 @@ export default function App() {
               onDeleteRoom={deleteRoom}
               onRefresh={refreshData}
               notify={notify}
+              showAlert={showAlert}
+              confirm={confirm}
             />
           )}
         </div>
       </div>
 
-      <Notifications items={notifications} />
+      <AlertModal
+        open={Boolean(alertState)}
+        type={alertState?.type}
+        title={alertState?.title}
+        message={alertState?.message}
+        details={alertState?.details}
+        onClose={closeAlert}
+      />
+
+      <ConfirmDialog
+        open={Boolean(confirmState)}
+        title={confirmState?.title}
+        message={confirmState?.message}
+        confirmLabel={confirmState?.confirmLabel}
+        cancelLabel={confirmState?.cancelLabel}
+        destructive={confirmState?.destructive}
+        onConfirm={handleConfirm}
+        onCancel={closeConfirm}
+      />
     </HashRouter>
   );
 }

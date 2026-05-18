@@ -169,38 +169,6 @@ function ExtendModal({ open, room, duration, onClose, onDurationChange, onConfir
   );
 }
 
-function SuccessModal({ open, data, onClose }) {
-  if (!open || !data) return null;
-
-  return (
-    <div className="success-modal-overlay active" id="success-modal" onClick={onClose}>
-      <div className="success-modal" onClick={(event) => event.stopPropagation()}>
-        <div className="success-modal__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </div>
-        <h2 className="success-modal__title">Booking Confirmed!</h2>
-        <p className="success-modal__message">
-          <span className="success-modal__room-name" id="success-room-name">
-            {data.roomName}
-          </span>{' '}
-          has been successfully booked.
-        </p>
-        <p className="success-modal__details" id="success-booking-details">
-          Customer: <span id="success-customer-name">{data.customerName}</span> | Duration:{' '}
-          <span id="success-duration">
-            {data.duration} {data.duration === 1 ? 'hour' : 'hours'}
-          </span>
-        </p>
-        <button className="btn btn-primary" id="close-success-modal" style={{ marginTop: '1.5rem' }} onClick={onClose} type="button">
-          Got it!
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function DashboardPage({
   rooms,
   activeSessions,
@@ -208,7 +176,8 @@ export default function DashboardPage({
   onReleaseRoom,
   onExtendRoom,
   onRefresh,
-  notify,
+  showAlert,
+  confirm,
 }) {
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [bookingRoomId, setBookingRoomId] = useState(null);
@@ -216,7 +185,6 @@ export default function DashboardPage({
   const [bookingDuration, setBookingDuration] = useState(1);
   const [extendRoomId, setExtendRoomId] = useState(null);
   const [extendDuration, setExtendDuration] = useState(1);
-  const [successData, setSuccessData] = useState(null);
   const notifiedKeysRef = useRef(new Set());
   const releasingRoomsRef = useRef(new Set());
 
@@ -276,11 +244,15 @@ export default function DashboardPage({
 
         onReleaseRoom(roomId)
           .then(() => {
-            notify(`${roomName} session has ended automatically.`, 'warning');
+            showAlert({
+              type: 'warning',
+              title: 'Session Ended',
+              message: `${roomName} session has ended automatically.`,
+            });
             return onRefresh();
           })
           .catch((error) => {
-            notify(error.message || 'Failed to auto-release room.', 'error');
+            showAlert({ type: 'error', message: error.message || 'Failed to auto-release room.' });
           })
           .finally(() => {
             releasingRoomsRef.current.delete(roomId);
@@ -291,22 +263,28 @@ export default function DashboardPage({
 
       if (remaining === 300 && !notifiedKeysRef.current.has(`${roomId}-5m`)) {
         notifiedKeysRef.current.add(`${roomId}-5m`);
-        notify(`${roomName} (${session.customer_name}) has only 5 minutes remaining!`, 'warning');
-
-        setTimeout(() => {
-          if (window.confirm(`${roomName} time is running out.\n\nDo you want to extend this session now?`)) {
+        confirm({
+          title: '5 minutes remaining',
+          message: `${roomName} (${session.customer_name}) has only 5 minutes left.\n\nDo you want to extend this session now?`,
+          confirmLabel: 'Extend now',
+          cancelLabel: 'Not yet',
+          onConfirm: () => {
             setExtendRoomId(roomId);
             setExtendDuration(1);
-          }
-        }, 250);
+          },
+        });
       }
 
       if (remaining === 60 && !notifiedKeysRef.current.has(`${roomId}-1m`)) {
         notifiedKeysRef.current.add(`${roomId}-1m`);
-        notify(`${roomName} (${session.customer_name}) has only 1 minute remaining!`, 'warning');
+        showAlert({
+          type: 'warning',
+          title: '1 minute remaining',
+          message: `${roomName} (${session.customer_name}) has only 1 minute left!`,
+        });
       }
     });
-  }, [activeSessions, nowMs, notify, onRefresh, onReleaseRoom, roomMap]);
+  }, [activeSessions, nowMs, confirm, onRefresh, onReleaseRoom, roomMap, showAlert]);
 
   const bookingRoom = bookingRoomId ? roomMap.get(bookingRoomId) : null;
   const extendRoom = extendRoomId ? roomMap.get(extendRoomId) : null;
@@ -330,34 +308,44 @@ export default function DashboardPage({
     setExtendRoomId(null);
   };
 
-  const closeSuccess = () => {
-    setSuccessData(null);
-  };
-
-  const handleStopRoom = async (roomId) => {
+  const handleStopRoom = (roomId) => {
     const room = roomMap.get(roomId);
     const roomLabel = room?.name || `Room ${roomId}`;
 
-    if (!window.confirm(`Are you sure you want to stop the session for ${roomLabel}?`)) {
-      return;
-    }
-
-    try {
-      await onReleaseRoom(roomId);
-      await onRefresh();
-      notify(`${roomLabel} session has been stopped.`, 'success');
-    } catch (error) {
-      notify(error.message || 'Failed to stop the session.', 'error');
-    }
+    confirm({
+      title: 'Stop session?',
+      message: `Are you sure you want to stop the session for ${roomLabel}?`,
+      confirmLabel: 'Stop session',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await onReleaseRoom(roomId);
+          await onRefresh();
+          showAlert({
+            type: 'success',
+            title: 'Session stopped',
+            message: `${roomLabel} session has been stopped.`,
+          });
+        } catch (error) {
+          showAlert({
+            type: 'error',
+            message: error.message || 'Failed to stop the session.',
+          });
+        }
+      },
+    });
   };
 
   const handleConfirmBooking = async () => {
     if (!bookingRoom) return;
 
     if (!bookingCustomer.trim()) {
-      notify('Please enter customer name.', 'error');
+      showAlert({ type: 'error', title: 'Missing info', message: 'Please enter customer name.' });
       return;
     }
+
+    const customerName = bookingCustomer.trim();
+    const durationLabel = `${bookingDuration} ${bookingDuration === 1 ? 'hour' : 'hours'}`;
 
     try {
       await onBookRoom({
@@ -367,20 +355,25 @@ export default function DashboardPage({
       });
       await onRefresh();
 
-      setSuccessData({
-        roomName: bookingRoom.name,
-        customerName: bookingCustomer.trim(),
-        duration: bookingDuration,
-      });
+      const roomName = bookingRoom.name;
       closeBooking();
-      notify(`${bookingRoom.name} booked for ${bookingCustomer.trim()} (${bookingDuration}h).`, 'success');
+
+      showAlert({
+        type: 'success',
+        title: 'Booking Confirmed!',
+        message: `${roomName} has been successfully booked.`,
+        details: `Customer: ${customerName} | Duration: ${durationLabel}`,
+      });
     } catch (error) {
-      notify(error.message || 'Failed to book room.', 'error');
+      showAlert({ type: 'error', message: error.message || 'Failed to book room.' });
     }
   };
 
   const handleConfirmExtend = async () => {
     if (!extendRoom) return;
+
+    const roomName = extendRoom.name;
+    const hoursLabel = `${extendDuration} ${extendDuration === 1 ? 'hour' : 'hours'}`;
 
     try {
       await onExtendRoom({ roomId: extendRoom.id, additionalHours: extendDuration });
@@ -390,9 +383,13 @@ export default function DashboardPage({
       notifiedKeysRef.current.delete(`${extendRoom.id}-1m`);
 
       closeExtend();
-      notify(`${extendRoom.name} extended by ${extendDuration} ${extendDuration === 1 ? 'hour' : 'hours'}.`, 'success');
+      showAlert({
+        type: 'success',
+        title: 'Session Extended',
+        message: `${roomName} has been extended by ${hoursLabel}.`,
+      });
     } catch (error) {
-      notify(error.message || 'Failed to extend session.', 'error');
+      showAlert({ type: 'error', message: error.message || 'Failed to extend session.' });
     }
   };
 
@@ -435,8 +432,6 @@ export default function DashboardPage({
         onDurationChange={setExtendDuration}
         onConfirm={handleConfirmExtend}
       />
-
-      <SuccessModal open={Boolean(successData)} data={successData} onClose={closeSuccess} />
     </>
   );
 }
